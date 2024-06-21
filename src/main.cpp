@@ -3,6 +3,9 @@
 #include <cstdio>
 #include <string>
 #include <array>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
 
 float getDiskUsage() {
     std::array<char, 128> buffer;
@@ -18,8 +21,11 @@ float getDiskUsage() {
 }
 
 void clearLogsAndRestartSyslog() {
-    std::system("sudo rm -rf /var/log");
-    std::system("sudo systemctl restart syslog.service");
+    std::string password = "y"; 
+    std::string command = "echo " + password + " | sudo -S rm -rf /var/log";
+    std::system(command.c_str());
+    command = "echo " + password + " | sudo -S systemctl restart syslog.service";
+    std::system(command.c_str());
 }
 
 int main(int argc, char **argv) {
@@ -31,7 +37,7 @@ int main(int argc, char **argv) {
         try {
             float disk_usage = getDiskUsage();
             //ROS_INFO("Current disk usage: %.2f%%", disk_usage);
-            if (disk_usage > 30.0) {
+            if (disk_usage >= 30.0) {
                 ROS_WARN("Disk usage exceeded 30%%, executing cleanup commands.");
                 clearLogsAndRestartSyslog();
             }
